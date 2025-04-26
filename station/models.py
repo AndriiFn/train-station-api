@@ -82,19 +82,19 @@ class Ticket(models.Model):
     order = models.ForeignKey("Order", on_delete=models.CASCADE, related_name="orders")
 
     @staticmethod
-    def validate_ticket(seat, cargo, places_in_cargo, error_to_raise):
-        for ticket_attr_value, ticket_attr_name, places_in_cargo_attr_name in [
+    def validate_ticket(seat, cargo, train, error_to_raise):
+        for ticket_attr_value, ticket_attr_name, train_attr_name in [
             (seat, "seat", "seats"),
             (cargo, "cargo", "cargos"),
         ]:
-            count_attrs = getattr(places_in_cargo, places_in_cargo_attr_name)
+            count_attrs = getattr(train, train_attr_name)
             if not (1 <= ticket_attr_value <= count_attrs):
                 raise error_to_raise(
                     {
-                        ticket_attr_name: (
-                            f"{ticket_attr_name} number must be in the available range: "
-                            f"(1, {count_attrs})"
-                        )
+                        ticket_attr_name: f"{ticket_attr_value} "
+                                          f"number must be in available range: "
+                                          f"(1, {train_attr_name}):"
+                                          f"(1, {count_attrs})"
                     }
                 )
 
