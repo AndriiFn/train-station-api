@@ -11,6 +11,7 @@ from station.models import (
     Order,
 )
 
+
 admin.site.register(Ticket)
 admin.site.register(Route)
 admin.site.register(Station)
