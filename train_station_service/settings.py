@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "debug_toolbar",
     "station",
     "user",
 ]
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "train_station_service.urls"
@@ -114,6 +116,11 @@ USE_I18N = True
 USE_TZ = True
 
 AUTH_USER_MODEL = "user.User"
+
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 
 # Static files (CSS, JavaScript, Images)
