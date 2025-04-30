@@ -85,8 +85,9 @@ class TrainListSerializer(TrainSerializer):
 
 
 class JourneyListSerializer(JourneySerializer):
-    route = RouteListSerializer(read_only=True)
-    train = TrainListSerializer(read_only=True)
+    source = serializers.CharField(source="route.source", read_only=True)
+    destination = serializers.CharField(source="route.destination", read_only=True)
+    train_name = serializers.CharField(source="train.name", read_only=True)
     duration = serializers.CharField(
         source="duration_in_hours",
         read_only=True,
@@ -102,11 +103,11 @@ class JourneyListSerializer(JourneySerializer):
 
     class Meta:
         model = Journey
-        fields = ("id", "route", "train", "departure_time", "arrival_time", "duration")
+        fields = ("id", "train_name", "source", "destination", "departure_time", "arrival_time", "duration")
 
 
 class JourneyDetailListSerializer(JourneySerializer):
-    route = RouteListSerializer(read_only=True)
+    route = RouteDetailSerializer(read_only=True)
     train = TrainSerializer(read_only=True)
     duration = serializers.CharField(
         source="duration_in_hours",
