@@ -24,7 +24,7 @@ from station.serializers import (
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
+    queryset = Route.objects.all().select_related("source", "destination")
     serializer_class = RouteSerializer
 
     def get_serializer_class(self):
