@@ -26,6 +26,30 @@ class StationSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "latitude", "longitude")
 
 
+class StationListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Station
+        fields = ("name", )
+
+
+class RouteListSerializer(RouteSerializer):
+    source = StationListSerializer(read_only=True)
+    destination = StationListSerializer(read_only=True)
+
+    class Meta:
+        model = Route
+        fields = ("id", "source", "destination")
+
+
+class RouteDetailSerializer(RouteSerializer):
+    source = StationSerializer(read_only=True)
+    destination = StationSerializer(read_only=True)
+
+    class Meta:
+        model = Route
+        fields = ("id", "source", "destination", "distance")
+
+
 class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
