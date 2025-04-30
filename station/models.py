@@ -50,10 +50,20 @@ class Journey(models.Model):
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
-    def duration(self):
-        return self.arrival_time - self.departure_time
+    @property
+    def duration_in_hours(self):
+        duration = (self.arrival_time - self.departure_time)
+        return f"{duration.total_seconds() / 3600} hours"
 
-    def __str__(self):
+    @property
+    def formatted_departure_time(self):
+        return self.departure_time.strftime("%d %B %Y, %I:%M %p")
+
+    @property
+    def formatted_arrival_time(self):
+        return self.arrival_time.strftime("%d %B %Y, %I:%M %p")
+
+def __str__(self):
         return (f"{self.route} departures at {self.departure_time}"
                 f" and arrivals at {self.arrival_time}")
 
