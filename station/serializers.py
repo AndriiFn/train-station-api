@@ -29,7 +29,7 @@ class StationSerializer(serializers.ModelSerializer):
 class StationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
-        fields = ("name", )
+        fields = ("id", "name", )
 
 
 class RouteListSerializer(RouteSerializer):
@@ -62,16 +62,68 @@ class JourneySerializer(serializers.ModelSerializer):
         fields = ("id", "route", "train", "departure_time", "arrival_time")
 
 
+class TrainTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainType
+        fields = ("id", "name")
+
+
 class TrainSerializer(serializers.ModelSerializer):
+    train_type = TrainTypeSerializer(read_only=True)
+
     class Meta:
         model = Train
         fields = ("id", "name", "cargo_num", "places_in_cargo", "train_type")
 
 
-class TrainTypeSerializer(serializers.ModelSerializer):
+class TrainListSerializer(TrainSerializer):
+    train_type = TrainTypeSerializer(read_only=True)
+
     class Meta:
-        model = TrainType
-        fields = ("id", "name")
+        model = Train
+        fields = ("id", "name", "train_type")
+
+
+class JourneyListSerializer(JourneySerializer):
+    route = RouteListSerializer(read_only=True)
+    train = TrainListSerializer(read_only=True)
+    duration = serializers.CharField(
+        source="duration_in_hours",
+        read_only=True,
+    )
+    departure_time = serializers.CharField(
+        source="formatted_departure_time",
+        read_only=True,
+    )
+    arrival_time = serializers.CharField(
+        source="formatted_arrival_time",
+        read_only=True,
+    )
+
+    class Meta:
+        model = Journey
+        fields = ("id", "route", "train", "departure_time", "arrival_time", "duration")
+
+
+class JourneyDetailListSerializer(JourneySerializer):
+    route = RouteListSerializer(read_only=True)
+    train = TrainSerializer(read_only=True)
+    duration = serializers.CharField(
+        source="duration_in_hours",
+        read_only=True,
+    )
+    departure_time = serializers.CharField(
+        source="formatted_departure_time",
+        read_only=True,
+    )
+    arrival_time = serializers.CharField(
+        source="formatted_arrival_time",
+        read_only=True,
+    )
+
+    class Meta:
+        model = Journey
+        fields = ("id", "route", "train", "departure_time", "arrival_time", "duration")
 
 
 class TicketSerializer(serializers.ModelSerializer):
