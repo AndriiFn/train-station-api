@@ -71,7 +71,7 @@ class Journey(models.Model):
 
 class Train(models.Model):
     name = models.CharField(max_length=255)
-    cargo_num = models.IntegerField(validators=[MinValueValidator(0)])
+    cargo_num = models.IntegerField(validators=[MinValueValidator(0)], blank=True, null=True)
     places_in_cargo = models.IntegerField(validators=[MinValueValidator(0)])
     train_type = models.ForeignKey("TrainType", on_delete=models.CASCADE, related_name="trains")
 
@@ -87,16 +87,15 @@ class TrainType(models.Model):
 
 
 class Ticket(models.Model):
-    cargo = models.IntegerField(validators=[MinValueValidator(0)])
+    cargo = models.IntegerField()
     seat = models.IntegerField()
     journey = models.ForeignKey("Journey", on_delete=models.CASCADE, related_name="tickets")
-    order = models.ForeignKey("Order", on_delete=models.CASCADE, related_name="orders")
+    order = models.ForeignKey("Order", on_delete=models.CASCADE, related_name="tickets")
 
     @staticmethod
-    def validate_ticket(seat, cargo, train, error_to_raise):
+    def validate_ticket(seat, train, error_to_raise):
         for ticket_attr_value, ticket_attr_name, train_attr_name in [
-            (seat, "seat", "seats"),
-            (cargo, "cargo", "cargos"),
+            (seat, "seat", "places_in_cargo"),
         ]:
             count_attrs = getattr(train, train_attr_name)
             if not (1 <= ticket_attr_value <= count_attrs):
@@ -112,8 +111,7 @@ class Ticket(models.Model):
     def clean(self):
         Ticket.validate_ticket(
             self.seat,
-            self.cargo,
-            self.journey.train.places_in_cargo,
+            self.journey.train,
             ValidationError
         )
 
@@ -139,7 +137,7 @@ class Ticket(models.Model):
         ordering = ["seat"]
 
     def __str__(self):
-        return f"Journey: {self.journey} (seat: {self.seat}, cargo: {self.cargo})"
+        return f"Journey: {self.journey} (seat: {self.seat}"
 
 
 class Order(models.Model):
