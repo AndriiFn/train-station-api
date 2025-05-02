@@ -152,14 +152,18 @@ class Ticket(models.Model):
 
 
 class Order(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]
+
+    @property
+    def formatted_created_at(self):
+        return self.created_at.strftime("%d %B %Y, %I:%M %p")
 
     def __str__(self):
-        return f"Order: {self.user} (created: {self.created})"
+        return f"Order: {self.user} (created: {self.created_at})"
