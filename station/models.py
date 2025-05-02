@@ -93,12 +93,12 @@ class Ticket(models.Model):
     order = models.ForeignKey("Order", on_delete=models.CASCADE, related_name="tickets")
 
     @staticmethod
-    def validate_ticket(seat, cargo, train, error_to_raise):
-        booked_seats = {ticket.seat for ticket in Ticket.objects.filter(journey__train=train)}
+    def validate_ticket(seat, cargo, journey, train, error_to_raise):
+        booked_seats = {ticket.seat for ticket in Ticket.objects.filter(journey=journey)}
         if seat in booked_seats:
             raise error_to_raise({"seat": f"Seat number {seat} is already booked"})
 
-        booked_cargos = {ticket.cargo for ticket in Ticket.objects.filter(journey__train=train)}
+        booked_cargos = {ticket.cargo for ticket in Ticket.objects.filter(journey=journey)}
         if cargo is not None and cargo in booked_cargos:
             raise error_to_raise({"cargo": f"Cargo number {cargo} is already booked"})
 
@@ -121,6 +121,7 @@ class Ticket(models.Model):
         Ticket.validate_ticket(
             self.seat,
             self.cargo,
+            self.journey,
             self.journey.train,
             ValidationError
         )
