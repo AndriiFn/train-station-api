@@ -73,7 +73,7 @@ class TrainSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Train
-        fields = ("id", "name", "cargo_num", "places_in_cargo", "train_type")
+        fields = ("id", "name", "cargo_num", "places_in_cargo", "train_type", "number_of_seats")
 
 
 class TrainListSerializer(TrainSerializer):
@@ -81,7 +81,15 @@ class TrainListSerializer(TrainSerializer):
 
     class Meta:
         model = Train
-        fields = ("id", "name", "train_type")
+        fields = ("id", "name", "train_type", "number_of_seats")
+
+
+class TrainDetailSerializer(TrainSerializer):
+    train_type = TrainTypeSerializer(read_only=True)
+
+    class Meta:
+        model = Train
+        fields = ("id", "name", "cargo_num", "places_in_cargo", "train_type", "number_of_seats")
 
 
 class JourneyListSerializer(JourneySerializer):
@@ -100,10 +108,45 @@ class JourneyListSerializer(JourneySerializer):
         source="formatted_arrival_time",
         read_only=True,
     )
+    number_of_seats = serializers.IntegerField(
+        source="train.number_of_seats",
+        read_only=True,
+    )
 
     class Meta:
         model = Journey
-        fields = ("id", "train_name", "source", "destination", "departure_time", "arrival_time", "duration")
+        fields = ("id",
+                  "train_name",
+                  "source",
+                  "destination",
+                  "number_of_seats",
+                  "num_of_available_seats",
+                  "departure_time",
+                  "arrival_time",
+                  "duration"
+                  )
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        data = super(TicketSerializer, self).validate(attrs=attrs)
+        Ticket.validate_ticket(
+            attrs["cargo"],
+            attrs["places_in_cargo"].journey.train,
+            attrs["journey"],
+            ValidationError
+        )
+        return data
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "cargo", "seat", "journey", "order")
+
+
+class TicketSeatsSerializer(TicketSerializer):
+    class Meta:
+        model = Ticket
+        fields = ("cargo", "seat")
 
 
 class JourneyDetailListSerializer(JourneySerializer):
@@ -121,34 +164,29 @@ class JourneyDetailListSerializer(JourneySerializer):
         source="formatted_arrival_time",
         read_only=True,
     )
+    taken_seats = TicketSeatsSerializer(
+        source="tickets", many=True, read_only=True
+    )
 
     class Meta:
         model = Journey
-        fields = ("id", "route", "train", "departure_time", "arrival_time", "duration")
+        fields = ("id", "route", "train", "departure_time", "arrival_time", "duration", "taken_seats", "num_of_available_seats")
 
 
-class TicketSerializer(serializers.ModelSerializer):
-    def validate(self, attrs):
-        data = super(TicketSerializer, self).validate(attrs=attrs)
-        Ticket.validate_ticket(
-            attrs["cargo"],
-            attrs["seat"],
-            attrs["places_in_cargo"].journey.train,
-            ValidationError
-        )
-        return data
-
-    class Meta:
-        model = Ticket
-        fields = ("id", "cargo", "seat", "journey", "order")
+class TicketListSerializer(TicketSerializer):
+    journey = JourneyListSerializer(read_only=True)
 
 
 class OrderSerializer(serializers.ModelSerializer):
     tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+    created_at = serializers.CharField(
+        source="formatted_created_at",
+        read_only=True,
+    )
 
     class Meta:
         model = Order
-        fields = ("id", "tickets", "created")
+        fields = ("id", "tickets", "created_at")
 
     def create(self, validated_data):
         with transaction.atomic():
@@ -157,3 +195,7 @@ class OrderSerializer(serializers.ModelSerializer):
             for ticket_data in tickets_data:
                 Ticket.objects.create(order=order, **ticket_data)
             return order
+
+
+class OrderListSerializer(OrderSerializer):
+    tickets = TicketListSerializer(many=True, read_only=False)
