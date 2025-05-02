@@ -71,8 +71,8 @@ class Journey(models.Model):
 
 class Train(models.Model):
     name = models.CharField(max_length=255)
-    cargo_num = models.IntegerField(validators=[MinValueValidator(0)], blank=True, null=True)
-    places_in_cargo = models.IntegerField(validators=[MinValueValidator(0)])
+    cargo_num = models.IntegerField(blank=True, null=True)
+    places_in_cargo = models.IntegerField(validators=[MinValueValidator(0)], default=1)
     train_type = models.ForeignKey("TrainType", on_delete=models.CASCADE, related_name="trains")
 
     def __str__(self):
@@ -87,30 +87,40 @@ class TrainType(models.Model):
 
 
 class Ticket(models.Model):
-    cargo = models.IntegerField()
-    seat = models.IntegerField()
+    cargo = models.IntegerField(null=True, blank=True)
+    seat = models.IntegerField(validators=[MinValueValidator(1)])
     journey = models.ForeignKey("Journey", on_delete=models.CASCADE, related_name="tickets")
     order = models.ForeignKey("Order", on_delete=models.CASCADE, related_name="tickets")
 
     @staticmethod
-    def validate_ticket(seat, train, error_to_raise):
-        for ticket_attr_value, ticket_attr_name, train_attr_name in [
-            (seat, "seat", "places_in_cargo"),
+    def validate_ticket(seat, cargo, train, error_to_raise):
+        booked_seats = {ticket.seat for ticket in Ticket.objects.filter(journey__train=train)}
+        if seat in booked_seats:
+            raise error_to_raise({"seat": f"Seat number {seat} is already booked"})
+
+        booked_cargos = {ticket.cargo for ticket in Ticket.objects.filter(journey__train=train)}
+        if cargo is not None and cargo in booked_cargos:
+            raise error_to_raise({"cargo": f"Cargo number {cargo} is already booked"})
+
+        for ticket_attr_value, ticket_attr_name, train_attr_name, min_value in [
+            (seat, "seat", "places_in_cargo", 1),
+            (cargo if cargo is not None else 0, "cargo", "cargo_num", 0),
         ]:
             count_attrs = getattr(train, train_attr_name)
-            if not (1 <= ticket_attr_value <= count_attrs):
+            if not (min_value <= ticket_attr_value <= count_attrs):
                 raise error_to_raise(
                     {
                         ticket_attr_name: f"{ticket_attr_value} "
                                           f"number must be in available range: "
-                                          f"(1, {train_attr_name}):"
-                                          f"(1, {count_attrs})"
+                                          f"({min_value}, {train_attr_name}):"
+                                          f"({min_value}, {count_attrs})"
                     }
                 )
 
     def clean(self):
         Ticket.validate_ticket(
             self.seat,
+            self.cargo,
             self.journey.train,
             ValidationError
         )
