@@ -23,7 +23,6 @@ from station.serializers import (
     RouteDetailSerializer,
     JourneyListSerializer,
     JourneyDetailListSerializer,
-    OrderListSerializer,
     TrainListSerializer,
     TrainDetailSerializer,
 )
@@ -95,9 +94,3 @@ class TicketViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return OrderListSerializer
-        else:
-            return OrderSerializer
