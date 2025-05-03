@@ -186,7 +186,7 @@ class TicketListSerializer(TicketSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    tickets = TicketListSerializer(many=True, read_only=False, allow_empty=False)
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
     created_at = serializers.CharField(
         source="formatted_created_at",
         read_only=True,
@@ -203,3 +203,7 @@ class OrderSerializer(serializers.ModelSerializer):
             for ticket_data in tickets_data:
                 Ticket.objects.create(order=order, **ticket_data)
             return order
+
+
+class OrderListSerializer(OrderSerializer):
+    tickets = TicketListSerializer(many=True, read_only=True)
