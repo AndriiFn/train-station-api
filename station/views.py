@@ -30,6 +30,7 @@ from station.serializers import (
     OrderListSerializer,
     StationListSerializer,
     StationImageSerializer,
+    TrainImageSerializer,
 )
 
 
@@ -173,6 +174,8 @@ class TrainViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return TrainListSerializer
+        elif self.action == "upload_image":
+            return TrainImageSerializer
         elif self.action == "retrieve":
             return TrainDetailSerializer
         else:
@@ -193,6 +196,19 @@ class TrainViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(id__in=train_type_ids)
 
         return queryset.distinct()
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-image",
+    )
+    def upload_image(self, request, pk=None):
+        train = self.get_object()
+        serializer = self.get_serializer(train, data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TrainTypeViewSet(viewsets.ModelViewSet):
