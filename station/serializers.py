@@ -23,13 +23,19 @@ class RouteSerializer(serializers.ModelSerializer):
 class StationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
-        fields = ("id", "name", "latitude", "longitude")
+        fields = ("id", "name", "latitude", "longitude", "image")
 
 
-class StationListSerializer(serializers.ModelSerializer):
+class StationImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
-        fields = ("id", "name", )
+        fields = ("id", "image")
+
+
+class StationListSerializer(StationSerializer):
+    class Meta:
+        model = Station
+        fields = ("id", "name")
 
 
 class RouteListSerializer(RouteSerializer):
