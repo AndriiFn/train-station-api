@@ -31,12 +31,24 @@ from station.serializers import (
 
 def _params_to_ints(queryset):
     """Convert a list of string IDs to a list of integers."""
-    return [int(str_id) for str_id in queryset.split(",")]
+    return [int(str_id) for str_id in queryset.split(",") if str_id.isdigit()]
 
 def filter_queryset_by_name(queryset, request):
     name = request.query_params.get("name")
+
     if name:
-        queryset = queryset.filter(name__icontains=name)
+        names = [city_name.strip() for city_name in name.split(",")]
+
+        name_ids = _params_to_ints(name)
+
+        city = [city_name.capitalize() for city_name in names if not city_name.isdigit()]
+
+        if name_ids:
+            queryset = queryset.filter(id__in=name_ids)
+
+        if city:
+            queryset = queryset.filter(name__in=city)
+
     return queryset.distinct()
 
 
@@ -60,10 +72,16 @@ class RouteViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
 
         if source:
-            queryset = queryset.filter(source__name__icontains=source)
+            if source.isdigit():
+                queryset = queryset.filter(source__id__in=source)
+            else:
+                queryset = queryset.filter(source__name__icontains=source)
 
         if destination:
-            queryset = queryset.filter(destination__name__icontains=destination)
+            if destination.isdigit():
+                queryset = queryset.filter(destination__id__in=destination)
+            else:
+                queryset = queryset.filter(destination__name__contains=destination)
 
         return queryset.distinct()
 
@@ -106,13 +124,22 @@ class JourneyViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
 
         if source:
-            queryset = queryset.filter(route__source__name__icontains=source)
+            if source.isdigit():
+                queryset = queryset.filter(route__source__id__in=source)
+            else:
+                queryset = queryset.filter(route__source__name__icontains=source)
 
         if destination:
-            queryset = queryset.filter(route__destination__name__icontains=destination)
+            if destination.isdigit():
+                queryset = queryset.filter(route__destination__id__in=destination)
+            else:
+                queryset = queryset.filter(route__destination__name__icontains=destination)
 
         if train_name:
-            queryset = queryset.filter(train__name__icontains=train_name)
+            if train_name.isdigit():
+                queryset = queryset.filter(train__id__in=train_name)
+            else:
+                queryset = queryset.filter(train__name__icontains=train_name)
 
         return queryset.distinct()
 
@@ -138,15 +165,7 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
     serializer_class = TrainTypeSerializer
 
     def get_queryset(self):
-        """Retrieve train types with filters"""
-        name = self.request.query_params.get("name")
-
-        queryset = self.queryset
-
-        if name:
-            queryset = queryset.filter(name__icontains=name)
-
-        return queryset.distinct()
+        return filter_queryset_by_name(self.queryset, self.request)
 
 
 class TicketViewSet(viewsets.ModelViewSet):
