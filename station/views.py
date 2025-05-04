@@ -112,6 +112,20 @@ class TrainViewSet(viewsets.ModelViewSet):
         else:
             return TrainSerializer
 
+    def get_queryset(self):
+        name = self.request.query_params.get("name")
+        train_type = self.request.query_params.get("train_type")
+
+        queryset = self.queryset
+
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
+        if train_type:
+            queryset = queryset.filter(train_type__name__icontains=train_type)
+
+        return queryset.distinct()
+
 
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
