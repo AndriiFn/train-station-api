@@ -33,24 +33,6 @@ def _params_to_ints(queryset):
     """Convert a list of string IDs to a list of integers."""
     return [int(str_id) for str_id in queryset.split(",") if str_id.isdigit()]
 
-def filter_queryset_by_name(queryset, request):
-    name = request.query_params.get("name")
-
-    if name:
-        names = [city_name.strip() for city_name in name.split(",")]
-
-        name_ids = _params_to_ints(name)
-
-        city = [city_name.capitalize() for city_name in names if not city_name.isdigit()]
-
-        if name_ids:
-            queryset = queryset.filter(id__in=name_ids)
-
-        if city:
-            queryset = queryset.filter(name__in=city)
-
-    return queryset.distinct()
-
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all().select_related("source", "destination")
@@ -91,7 +73,22 @@ class StationViewSet(viewsets.ModelViewSet):
     serializer_class = StationSerializer
 
     def get_queryset(self):
-        return filter_queryset_by_name(self.queryset, self.request)
+        name = self.request.query_params.get("name")
+
+        queryset = self.queryset
+
+        if name:
+            names = [city_name.strip() for city_name in name.split(",")]
+            name_ids = _params_to_ints(name)
+            city = [city_name.capitalize() for city_name in names if not city_name.isdigit()]
+
+            if name_ids:
+                queryset = queryset.filter(id__in=name_ids)
+
+            if city:
+                queryset = queryset.filter(name__in=city)
+
+        return queryset.distinct()
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -157,7 +154,20 @@ class TrainViewSet(viewsets.ModelViewSet):
             return TrainSerializer
 
     def get_queryset(self):
-        return filter_queryset_by_name(self.queryset, self.request)
+        name = self.request.query_params.get("name")
+        train_type = self.request.query_params.get("train_type")
+
+        queryset = self.queryset
+
+        if name:
+            name_ids = _params_to_ints(name)
+            queryset = queryset.filter(id__in=name_ids)
+
+        if train_type:
+            train_type_ids = _params_to_ints(train_type)
+            queryset = queryset.filter(id__in=train_type_ids)
+
+        return queryset.distinct()
 
 
 class TrainTypeViewSet(viewsets.ModelViewSet):
@@ -165,7 +175,15 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
     serializer_class = TrainTypeSerializer
 
     def get_queryset(self):
-        return filter_queryset_by_name(self.queryset, self.request)
+        name = self.request.query_params.get("name")
+
+        queryset = self.queryset
+
+        if name:
+            name_ids = _params_to_ints(name)
+            queryset = queryset.filter(id__in=name_ids)
+
+        return queryset.distinct()
 
 
 class TicketViewSet(viewsets.ModelViewSet):
