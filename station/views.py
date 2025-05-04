@@ -66,6 +66,17 @@ class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
 
+    def get_queryset(self):
+        """Retrieve stations with filters"""
+        name = self.request.query_params.get("name")
+
+        queryset = self.queryset
+
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
+        return queryset.distinct()
+
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
