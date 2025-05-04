@@ -33,6 +33,12 @@ def _params_to_ints(queryset):
     """Convert a list of string IDs to a list of integers."""
     return [int(str_id) for str_id in queryset.split(",")]
 
+def filter_queryset_by_name(queryset, request):
+    name = request.query_params.get("name")
+    if name:
+        queryset = queryset.filter(name__icontains=name)
+    return queryset.distinct()
+
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all().select_related("source", "destination")
@@ -67,15 +73,7 @@ class StationViewSet(viewsets.ModelViewSet):
     serializer_class = StationSerializer
 
     def get_queryset(self):
-        """Retrieve stations with filters"""
-        name = self.request.query_params.get("name")
-
-        queryset = self.queryset
-
-        if name:
-            queryset = queryset.filter(name__icontains=name)
-
-        return queryset.distinct()
+        return filter_queryset_by_name(self.queryset, self.request)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -99,6 +97,25 @@ class JourneyViewSet(viewsets.ModelViewSet):
         else:
             return JourneySerializer
 
+    def get_queryset(self):
+        """Retrieve journey with filters"""
+        source = self.request.query_params.get("source")
+        destination = self.request.query_params.get("destination")
+        train_name = self.request.query_params.get("train_name")
+
+        queryset = self.queryset
+
+        if source:
+            queryset = queryset.filter(route__source__name__icontains=source)
+
+        if destination:
+            queryset = queryset.filter(route__destination__name__icontains=destination)
+
+        if train_name:
+            queryset = queryset.filter(train__name__icontains=train_name)
+
+        return queryset.distinct()
+
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
@@ -113,23 +130,23 @@ class TrainViewSet(viewsets.ModelViewSet):
             return TrainSerializer
 
     def get_queryset(self):
+        return filter_queryset_by_name(self.queryset, self.request)
+
+
+class TrainTypeViewSet(viewsets.ModelViewSet):
+    queryset = TrainType.objects.all()
+    serializer_class = TrainTypeSerializer
+
+    def get_queryset(self):
+        """Retrieve train types with filters"""
         name = self.request.query_params.get("name")
-        train_type = self.request.query_params.get("train_type")
 
         queryset = self.queryset
 
         if name:
             queryset = queryset.filter(name__icontains=name)
 
-        if train_type:
-            queryset = queryset.filter(train_type__name__icontains=train_type)
-
         return queryset.distinct()
-
-
-class TrainTypeViewSet(viewsets.ModelViewSet):
-    queryset = TrainType.objects.all()
-    serializer_class = TrainTypeSerializer
 
 
 class TicketViewSet(viewsets.ModelViewSet):
