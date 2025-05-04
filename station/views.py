@@ -29,6 +29,11 @@ from station.serializers import (
 )
 
 
+def _params_to_ints(queryset):
+    """Convert a list of string IDs to a list of integers."""
+    return [int(str_id) for str_id in queryset.split(",")]
+
+
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all().select_related("source", "destination")
     serializer_class = RouteSerializer
