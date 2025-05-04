@@ -1,4 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from station.models import (
     Route,
@@ -26,6 +28,8 @@ from station.serializers import (
     TrainListSerializer,
     TrainDetailSerializer,
     OrderListSerializer,
+    StationListSerializer,
+    StationImageSerializer,
 )
 
 
@@ -72,6 +76,14 @@ class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
 
+    def get_serializer_class(self):
+        if self.action == "list":
+            return StationListSerializer
+        elif self.action == "upload_image":
+            return StationImageSerializer
+        else:
+            return StationSerializer
+
     def get_queryset(self):
         name = self.request.query_params.get("name")
 
@@ -89,6 +101,19 @@ class StationViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(name__in=city)
 
         return queryset.distinct()
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-image",
+    )
+    def upload_image(self, request, pk=None):
+        station = self.get_object()
+        serializer = self.get_serializer(station, data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
