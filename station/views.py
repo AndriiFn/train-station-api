@@ -46,6 +46,21 @@ class RouteViewSet(viewsets.ModelViewSet):
         else:
             return RouteSerializer
 
+    def get_queryset(self):
+        """Retrieve routes with filters"""
+        source = self.request.query_params.get("source")
+        destination = self.request.query_params.get("destination")
+
+        queryset = self.queryset
+
+        if source:
+            queryset = queryset.filter(source__name__icontains=source)
+
+        if destination:
+            queryset = queryset.filter(destination__name__icontains=destination)
+
+        return queryset.distinct()
+
 
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
