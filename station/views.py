@@ -245,7 +245,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         ).prefetch_related(
             "tickets__journey__route__source",
             "tickets__journey__route__destination",
-            "tickets__journey__train__train_type",
         )
 
     def perform_create(self, serializer):
