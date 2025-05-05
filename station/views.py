@@ -1,12 +1,12 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from station.models import (
     Route,
     Station,
-    Ticket,
     Crew,
     Order,
     Journey,
@@ -16,7 +16,6 @@ from station.models import (
 from station.serializers import (
     RouteSerializer,
     StationSerializer,
-    TicketSerializer,
     CrewSerializer,
     OrderSerializer,
     JourneySerializer,
@@ -25,7 +24,7 @@ from station.serializers import (
     RouteListSerializer,
     RouteDetailSerializer,
     JourneyListSerializer,
-    JourneyDetailListSerializer,
+    JourneyDetailSerializer,
     TrainListSerializer,
     TrainDetailSerializer,
     OrderListSerializer,
@@ -33,11 +32,6 @@ from station.serializers import (
     StationImageSerializer,
     TrainImageSerializer,
 )
-
-
-def _params_to_ints(queryset):
-    """Convert a list of string IDs to a list of integers."""
-    return [int(str_id) for str_id in queryset.split(",") if str_id.isdigit()]
 
 
 class RouteViewSet(viewsets.ModelViewSet):
@@ -72,6 +66,11 @@ class RouteViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(destination__name__contains=destination)
 
         return queryset.distinct()
+
+
+def _params_to_ints(queryset):
+    """Convert a list of string IDs to a list of integers."""
+    return [int(str_id) for str_id in queryset.split(",") if str_id.isdigit()]
 
 
 class StationViewSet(viewsets.ModelViewSet):
@@ -135,7 +134,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return JourneyListSerializer
         elif self.action == "retrieve":
-            return JourneyDetailListSerializer
+            return JourneyDetailSerializer
         else:
             return JourneySerializer
 
@@ -228,8 +227,12 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
         return queryset.distinct()
 
 
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.select_related("user").prefetch_related("tickets__journey__train")
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    GenericViewSet,
+):
+    queryset = Order.objects.select_related("user").select_related("tickets__journey__train")
     serializer_class = OrderSerializer
     permission_classes = (IsAuthenticated, )
 
