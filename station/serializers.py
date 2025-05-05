@@ -19,6 +19,13 @@ class RouteSerializer(serializers.ModelSerializer):
         model = Route
         fields = ("id", "source", "destination", "distance")
 
+    def validate(self, attrs):
+        if attrs["source"] == attrs["destination"]:
+            raise ValidationError(
+                "Source and destination must be different"
+            )
+        return attrs
+
 
 class StationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,7 +82,7 @@ class TrainTypeSerializer(serializers.ModelSerializer):
 
 
 class TrainSerializer(serializers.ModelSerializer):
-    train_type = TrainTypeSerializer(read_only=True)
+    train_type = serializers.PrimaryKeyRelatedField(queryset=TrainType.objects.all(), write_only=True)
 
     class Meta:
         model = Train
