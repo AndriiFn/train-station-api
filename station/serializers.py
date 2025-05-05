@@ -161,7 +161,7 @@ class TicketSeatsSerializer(TicketSerializer):
         fields = ("cargo", "seat")
 
 
-class JourneyDetailListSerializer(JourneySerializer):
+class JourneyDetailSerializer(JourneySerializer):
     route = RouteDetailSerializer(read_only=True)
     train = TrainSerializer(read_only=True)
     duration = serializers.CharField(
