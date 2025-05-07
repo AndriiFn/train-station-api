@@ -110,9 +110,10 @@ class AuthenticatedRouteApiTests(TestCase):
                 "destination": f"{destination.id}"
             }
         )
-        serializer = RouteListSerializer(route)
+        serializer = RouteListSerializer([route], many=True)
 
-        self.assertIn(serializer.data, res.data)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(serializer.data, res.data)
 
 
 class AdminRouteApiTests(TestCase):
