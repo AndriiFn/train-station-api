@@ -9,6 +9,7 @@ from rest_framework.test import APIClient
 from station.models import Route, Station
 from station.serializers import RouteListSerializer, RouteDetailSerializer
 
+
 ROUTE_URL = reverse("station:route-list")
 STATION_URL = reverse("station:station-list")
 

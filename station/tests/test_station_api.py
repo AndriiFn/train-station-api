@@ -26,7 +26,7 @@ def detail_url(station_id):
 
 
 class UnauthenticatedStationApiTests(TestCase):
-    """Test for unauthenticated route API."""
+    """Test for unauthenticated station API."""
     def setUp(self):
         self.client = APIClient()
 
@@ -36,7 +36,7 @@ class UnauthenticatedStationApiTests(TestCase):
 
 
 class AuthenticatedStationApiTests(TestCase):
-    """Tests for authenticated route API."""
+    """Tests for authenticated station API."""
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(

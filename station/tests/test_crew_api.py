@@ -1,5 +1,3 @@
-import uuid
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -25,7 +23,7 @@ def detail_url(crew_id):
 
 
 class UnauthenticatedCrewApiTests(TestCase):
-    """Test for unauthenticated route API."""
+    """Test for unauthenticated crew API."""
     def setUp(self):
         self.client = APIClient()
 
@@ -35,7 +33,7 @@ class UnauthenticatedCrewApiTests(TestCase):
 
 
 class AuthenticatedCrewApiTests(TestCase):
-    """Tests for authenticated route API."""
+    """Tests for authenticated crew API."""
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
