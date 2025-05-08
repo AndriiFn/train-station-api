@@ -13,7 +13,6 @@ from station.serializers import JourneyDetailSerializer, JourneyListSerializer
 
 JOURNEY_URL = reverse("station:journey-list")
 ROUTE_URL = reverse("station:route-list")
-TRAIN_URL = reverse("station:train-list")
 
 
 def sample_journey(**params):
