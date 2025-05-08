@@ -198,6 +198,29 @@ class JourneyViewSet(viewsets.ModelViewSet):
 
         return queryset.distinct()
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by source name or ID (ex. ?source=lviv OR ?source=2)",
+            ),
+            OpenApiParameter(
+                "destination",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by destination name or ID (ex. ?destination=lviv OR ?destination=4)",
+            ),
+            OpenApiParameter(
+                "train_name",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by train_name name or ID (ex. ?train_name=Kyiv Express OR ?train_name=1)",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of journeys"""
+        return super().list(request, *args, **kwargs)
+
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
@@ -242,21 +265,56 @@ class TrainViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "name",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by name ID (ex. ?name=2)",
+            ),
+            OpenApiParameter(
+                "train_type",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by train_type name ID (ex. ?train_type=1)",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of trains"""
+        return super().list(request, *args, **kwargs)
+
 
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
 
     def get_queryset(self):
-        name = self.request.query_params.get("name")
+        name_list = self.request.query_params.getlist("name")
 
         queryset = self.queryset
 
-        if name:
-            name_ids = _params_to_ints(name)
-            queryset = queryset.filter(id__in=name_ids)
+        if name_list:
+            try:
+                name_ids = [int(n) for n in name_list if n.isdigit()]
+                if name_ids:
+                    queryset = queryset.filter(id__in=name_ids)
+            except ValueError:
+                pass
 
         return queryset.distinct()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "name",
+                type={"type": "array", "items": {"type": "number"}},
+                description="Filter by name ID (ex. ?name=1,2)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of train types"""
+        return super().list(request, *args, **kwargs)
 
 
 class OrderViewSet(
