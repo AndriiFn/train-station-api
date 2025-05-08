@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -67,6 +68,24 @@ class RouteViewSet(viewsets.ModelViewSet):
 
         return queryset.distinct()
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by source ID or name (ex. ?source=3 OR ?source=kyiv)",
+            ),
+            OpenApiParameter(
+                "destination",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by destination ID or name (ex. ?destination=4 OR ?destination=dnipro)",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of routes"""
+        return super().list(request, *args, **kwargs)
+
 
 def _params_to_ints(queryset):
     """Convert a list of string IDs to a list of integers."""
@@ -115,6 +134,19 @@ class StationViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "name",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by city name or ID (ex. ?name=lviv OR ?name=2)",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of stations"""
+        return super().list(request, *args, **kwargs)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
