@@ -10,9 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from dotenv import load_dotenv
 from datetime import timedelta
 from pathlib import Path
-
 
 load_dotenv()
 
@@ -137,7 +137,7 @@ INTERNAL_IPS = [
 
 STATIC_URL = "static/"
 
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = "/files/media/"
 
 MEDIA_URL = "/media/"
 
