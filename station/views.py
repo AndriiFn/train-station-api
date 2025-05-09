@@ -64,7 +64,7 @@ class RouteViewSet(viewsets.ModelViewSet):
             if destination.isdigit():
                 queryset = queryset.filter(destination__id__in=destination)
             else:
-                queryset = queryset.filter(destination__name__contains=destination)
+                queryset = queryset.filter(destination__name__icontains=destination)
 
         return queryset.distinct()
 
