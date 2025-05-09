@@ -1,9 +1,5 @@
 # Train Station API
 
-# DB Structure
-![models.png](../../../Downloads/models.png)
-
-
 **API service for train station management built with DRF**
 
 ---
